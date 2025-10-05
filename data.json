@@ -1,47 +1,50 @@
 {
-  "config": {
-    "defaultPoints": 0
+  "Leon": {
+    "points": 100
   },
-  "users": {
-    "Leon": { "points": 100 },
-    "Marie": { "points": 50 }
+  "Marie": {
+    "points": 50
   },
+  "leon": {
+    "points": 0
+  },
+  "Demo": {
+    "points": 11
+  },
+  "kjell": {
+    "points": 1
+  }
+},
   "questions": {
     "deutsch": [
-      {
-        "question": "Welches Wort ist ein Nomen?",
-        "answers": ["laufen", "Haus", "schön"],
-        "correct": "Haus"
-      },
-      {
-        "question": "Wähle das richtige Komma: 'Ich mag Äpfel ____ Birnen.'",
-        "answers": [",", ";", "."],
-        "correct": ","
-      }
+      { "question": "Welches Wort ist ein Nomen?", "answers": ["laufen", "Haus", "schön"], "correct": "Haus" },
+      { "question": "Wähle das richtige Komma: 'Ich mag Äpfel ____ Birnen.'", "answers": [",", ";", "."], "correct": "," },
+      { "question": "Welches Wort ist ein Adjektiv?", "answers": ["schnell", "rennen", "Freund"], "correct": "schnell" },
+      { "question": "Was ist der Plural von 'das Kind'?", "answers": ["Kinder", "Kinden", "Kinds"], "correct": "Kinder" },
+      { "question": "Welches Wort ist ein Verb?", "answers": ["spielen", "Spiel", "spielerisch"], "correct": "spielen" },
+      { "question": "Welches ist ein Relativpronomen?", "answers": ["der", "und", "nicht"], "correct": "der" },
+      { "question": "Welches Wort passt: 'Er geht ____ Schule.'", "answers": ["zur", "zu", "in"], "correct": "zur" },
+      { "question": "Setze das richtige Wort: 'Ich habe ___ Haus gesehen.'", "answers": ["ein", "eine", "einer"], "correct": "ein" }
     ],
     "mathe": [
-      {
-        "question": "Was ist 5 + 2?",
-        "answers": ["6", "7", "8"],
-        "correct": "7"
-      },
-      {
-        "question": "Was ist 9 × 3?",
-        "answers": ["27", "24", "30"],
-        "correct": "27"
-      }
+      { "question": "Was ist 5 + 2?", "answers": ["6", "7", "8"], "correct": "7" },
+      { "question": "Was ist 9 × 3?", "answers": ["27", "24", "30"], "correct": "27" },
+      { "question": "Was ist 12 ÷ 4?", "answers": ["3", "4", "2"], "correct": "3" },
+      { "question": "Wie viel ist 15 - 7?", "answers": ["7", "8", "9"], "correct": "8" },
+      { "question": "Welche Zahl ist gerade?", "answers": ["13", "22", "9"], "correct": "22" },
+      { "question": "Wieviele Minuten hat eine Stunde?", "answers": ["60", "100", "50"], "correct": "60" },
+      { "question": "Was ist 3^2 (3 Quadrat)?", "answers": ["9", "6", "12"], "correct": "9" },
+      { "question": "Was ist die Hälfte von 40?", "answers": ["10", "20", "30"], "correct": "20" }
     ],
     "englisch": [
-      {
-        "question": "Was heißt 'apple' auf Deutsch?",
-        "answers": ["Apfel", "Banane", "Birne"],
-        "correct": "Apfel"
-      },
-      {
-        "question": "Choose the correct article: '___ cat'",
-        "answers": ["A", "An", "The"],
-        "correct": "A"
-      }
+      { "question": "Was heißt 'apple' auf Deutsch?", "answers": ["Apfel", "Banane", "Birne"], "correct": "Apfel" },
+      { "question": "Choose the correct article: '___ cat'", "answers": ["A", "An", "The"], "correct": "A" },
+      { "question": "What is the plural of 'child'?", "answers": ["childs", "children", "childes"], "correct": "children" },
+      { "question": "Translate: 'Guten Morgen' -> English", "answers": ["Good night", "Good morning", "Good afternoon"], "correct": "Good morning" },
+      { "question": "Which is a color: 'blue' or 'run'?", "answers": ["blue", "run", "both"], "correct": "blue" },
+      { "question": "How do you say 'Danke' in English?", "answers": ["Please", "Thanks", "Hello"], "correct": "Thanks" },
+      { "question": "Choose: 'She ___ a book.'", "answers": ["reads", "readed", "reading"], "correct": "reads" },
+      { "question": "Which is the question word: 'Where' or 'Because'?", "answers": ["Because", "Where", "So"], "correct": "Where" }
     ]
   }
 }
