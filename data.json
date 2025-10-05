@@ -1,20 +1,11 @@
 {
-  "Leon": {
-    "points": 100
+  "users": {
+    "Leon": { "points": 100 },
+    "Marie": { "points": 50 },
+    "leon": { "points": 0 },
+    "Demo": { "points": 11 },
+    "kjell": { "points": 1 }
   },
-  "Marie": {
-    "points": 50
-  },
-  "leon": {
-    "points": 0
-  },
-  "Demo": {
-    "points": 11
-  },
-  "kjell": {
-    "points": 1
-  }
-},
   "questions": {
     "deutsch": [
       { "question": "Welches Wort ist ein Nomen?", "answers": ["laufen", "Haus", "schön"], "correct": "Haus" },
