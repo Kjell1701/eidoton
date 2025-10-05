@@ -1,0 +1,47 @@
+{
+  "config": {
+    "defaultPoints": 0
+  },
+  "users": {
+    "Leon": { "points": 100 },
+    "Marie": { "points": 50 }
+  },
+  "questions": {
+    "deutsch": [
+      {
+        "question": "Welches Wort ist ein Nomen?",
+        "answers": ["laufen", "Haus", "schön"],
+        "correct": "Haus"
+      },
+      {
+        "question": "Wähle das richtige Komma: 'Ich mag Äpfel ____ Birnen.'",
+        "answers": [",", ";", "."],
+        "correct": ","
+      }
+    ],
+    "mathe": [
+      {
+        "question": "Was ist 5 + 2?",
+        "answers": ["6", "7", "8"],
+        "correct": "7"
+      },
+      {
+        "question": "Was ist 9 × 3?",
+        "answers": ["27", "24", "30"],
+        "correct": "27"
+      }
+    ],
+    "englisch": [
+      {
+        "question": "Was heißt 'apple' auf Deutsch?",
+        "answers": ["Apfel", "Banane", "Birne"],
+        "correct": "Apfel"
+      },
+      {
+        "question": "Choose the correct article: '___ cat'",
+        "answers": ["A", "An", "The"],
+        "correct": "A"
+      }
+    ]
+  }
+}
