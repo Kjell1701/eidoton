@@ -7,72 +7,67 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-container">
+  <div class="app-root">
 
-    <!-- LOGIN -->
-    <div id="login-screen" class="card center">
+    <!-- LOGIN (zentrale Karte) -->
+    <div id="login-screen" class="center-card">
       <h1 class="brand">Lern-App</h1>
       <p class="hint">Gib kurz deinen Namen ein (keine E-Mail)</p>
       <input id="username-input" type="text" placeholder="Dein Name" autocomplete="off" />
       <div class="row">
         <button id="login-btn" class="btn primary">Einloggen</button>
-        <button id="demo-btn" class="btn">Demo-Name</button>
+        <button id="demo-btn" class="btn">Demo</button>
       </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- MAIN SCREEN -->
     <div id="main-screen" class="hidden">
-      <div class="topbar">
-        <div class="title" id="subject-title">Wähle ein Fach</div>
-        <div class="profile" id="profile">
-          <div>
-            <div id="profile-name" class="pname">—</div>
-            <div id="profile-points" class="ppoints">0 Punkte</div>
+
+      <!-- großes, zentriertes Game-Area -->
+      <main class="game-area">
+        <div class="card question-card">
+          <div id="question-text" class="question">Tippe unten ein Fach an, um zu starten.</div>
+          <div id="answers" class="answers"></div>
+        </div>
+      </main>
+
+      <!-- persistente untere Leiste -->
+      <nav class="bottom-bar">
+        <div class="subjects">
+          <button class="subject-btn" data-subject="deutsch">Deutsch</button>
+          <button class="subject-btn" data-subject="mathe">Mathe</button>
+          <button class="subject-btn" data-subject="englisch">Englisch</button>
+        </div>
+
+        <div class="bar-right">
+          <div id="profile-button" class="profile-pill" title="Profil öffnen">
+            <span id="bar-name">—</span>
+            <span id="bar-points">0</span>
           </div>
-          <div class="profile-actions">
-            <button id="export-btn" class="btn small">Export Users</button>
-            <button id="resetlocal-btn" class="btn small">Reset Local</button>
+        </div>
+      </nav>
+
+      <!-- Profil Modal -->
+      <div id="profile-modal" class="modal hidden">
+        <div class="modal-card">
+          <h2>Profil</h2>
+          <div class="modal-row">
+            <label for="modal-name">Name:</label>
+            <input id="modal-name" type="text" />
+          </div>
+          <div class="modal-row">
+            <label>Punkte:</label>
+            <span id="modal-points">0</span>
+          </div>
+          <div class="modal-actions">
+            <button id="save-name-btn" class="btn primary">Speichern</button>
+            <button id="logout-btn" class="btn">Ausloggen</button>
+            <button id="close-modal-btn" class="btn">Schließen</button>
           </div>
         </div>
       </div>
 
-      <div class="content">
-
-        <!-- Game / Question area (links on large screens) -->
-        <main class="game card">
-          <div id="question-box">
-            <div id="question-text" class="question">Tippe unten ein Fach an, um zu starten.</div>
-            <div id="answers" class="answers"></div>
-          </div>
-        </main>
-
-        <!-- Right column (profile / info) -->
-        <aside class="sidebar card">
-          <h3>Profil</h3>
-          <div class="profile-big">
-            <div id="profile-name-big" class="pname-big">—</div>
-            <div id="profile-points-big" class="ppoints-big">0 Punkte</div>
-          </div>
-          <hr />
-          <div class="instructions">
-            <strong>Anleitung</strong>
-            <ol>
-              <li>Einloggen mit Namen</li>
-              <li>Unten ein Fach auswählen</li>
-              <li>Antwort auswählen — richtig = +1 Punkt</li>
-            </ol>
-          </div>
-        </aside>
-      </div>
-
-      <!-- bottom subject bar (persistant) -->
-      <nav class="subject-bar">
-        <button class="subject-btn" data-subject="deutsch">Deutsch</button>
-        <button class="subject-btn" data-subject="mathe">Mathe</button>
-        <button class="subject-btn" data-subject="englisch">Englisch</button>
-      </nav>
     </div>
-
   </div>
 
   <script src="app.js" type="module"></script>
