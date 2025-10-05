@@ -1,4 +1,4 @@
-// app.js (ES module)
+// app.js (korrigierte Version)
 let DATA = null;
 let users = {};
 let questions = {};
@@ -11,17 +11,36 @@ let nextQuestionTimeout = null;
 const qs = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
 
+/**
+ * Robust loader: versucht data.json zu laden, fällt bei Fehlern
+ * auf sichere Defaults zurück (damit Event-Handler trotzdem registriert werden).
+ */
 async function loadData(){
-  const res = await fetch('data.json');
-  DATA = await res.json();
+  try {
+    const res = await fetch('data.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DATA = await res.json();
+  } catch (e) {
+    console.error('Konnte data.json nicht laden — benutze Defaults. Fehler:', e);
+    // Fallback, damit die App weiter funktioniert
+    DATA = {
+      config: { defaultPoints: 0 },
+      users: {},
+      questions: {}
+    };
+  }
+
   config = DATA.config || { defaultPoints: 0 };
   users = DATA.users || {};
   questions = DATA.questions || {};
-  // merge local users if exist
+
+  // merge local users if exist (keine Ausnahme wenn JSON kaputt)
   try {
     const local = JSON.parse(localStorage.getItem('lernapp_users') || '{}');
     users = { ...users, ...local };
-  } catch (e) {}
+  } catch (e) {
+    console.warn('lokaler Nutzer-JSON parse Fehler', e);
+  }
 }
 
 function showLogin(){ qs('#login-screen').classList.remove('hidden'); qs('#main-screen').classList.add('hidden'); }
@@ -37,8 +56,10 @@ function updateBarProfile(){
   }
   qs('#bar-name').textContent = currentUser.name;
   qs('#bar-points').textContent = currentUser.points;
-  qs('#modal-name').value = currentUser.name;
-  qs('#modal-points').textContent = currentUser.points;
+  const modalName = qs('#modal-name');
+  if(modalName) modalName.value = currentUser.name;
+  const modalPoints = qs('#modal-points');
+  if(modalPoints) modalPoints.textContent = currentUser.points;
 }
 
 function randFrom(arr){ if(!arr || !arr.length) return null; return arr[Math.floor(Math.random()*arr.length)]; }
@@ -67,9 +88,7 @@ function renderQuestion(q){
 function showQuestionFor(subject){
   if(!subject) return;
   currentSubject = subject;
-  // mark active
   qsa('.subject-btn').forEach(b => b.classList.toggle('active', b.dataset.subject === subject));
-  // set header text (not visible now but we can show as question)
   const q = pickQuestion(subject);
   renderQuestion(q);
 }
@@ -84,11 +103,10 @@ function handleAnswer(answer, btn){
     btn.classList.add('correct');
     currentUser.points = (currentUser.points||0) + 1;
     users[currentUser.name] = { points: currentUser.points };
-    localStorage.setItem('lernapp_users', JSON.stringify(users));
+    try { localStorage.setItem('lernapp_users', JSON.stringify(users)); } catch(e){ console.warn('localStorage write failed', e); }
     updateBarProfile();
   } else {
     btn.classList.add('wrong');
-    // highlight correct
     const corr = qsa('.ans-btn').find(b => b.dataset.answer === correct);
     if(corr) corr.classList.add('correct');
   }
@@ -113,9 +131,10 @@ function logout(){
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Wenn loadData fehlschlägt, fangen wir das intern ab und setzen Defaults.
   await loadData();
 
-  // elements
+  // Elemente (falls eines fehlt, loggen wir's, aber verhindern Fehler)
   const loginBtn = qs('#login-btn');
   const demoBtn = qs('#demo-btn');
   const input = qs('#username-input');
@@ -125,12 +144,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveNameBtn = qs('#save-name-btn');
   const logoutBtn = qs('#logout-btn');
 
+  if(!loginBtn || !input) {
+    console.error('Wichtige UI-Elemente fehlen (login-btn / username-input). Prüfe index.html.');
+    return;
+  }
+
   // quick-prefill from local users
   try {
     const local = JSON.parse(localStorage.getItem('lernapp_users') || '{}');
     const names = Object.keys(local);
     if(names.length) input.value = names[0];
-  } catch(e){}
+  } catch(e){ /* ignore */ }
 
   loginBtn.addEventListener('click', () => {
     const name = input.value.trim();
@@ -138,16 +162,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const existing = users[name] || { points: config.defaultPoints || 0 };
     currentUser = { name, points: existing.points || 0 };
     users[name] = { points: currentUser.points };
-    localStorage.setItem('lernapp_users', JSON.stringify(users));
+    try { localStorage.setItem('lernapp_users', JSON.stringify(users)); } catch(e){ console.warn('localStorage write failed', e); }
     updateBarProfile();
     showMain();
-    // default subject immediately show deutsch
     showQuestionFor('deutsch');
   });
 
-  demoBtn.addEventListener('click', () => {
-    input.value = 'Demo';
-  });
+  if(demoBtn) demoBtn.addEventListener('click', () => { input.value = 'Demo'; });
 
   subjectBtns.forEach(b => b.addEventListener('click', () => {
     if(!currentUser){ alert('Bitte zuerst einloggen (Name eingeben).'); return; }
@@ -155,39 +176,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     showQuestionFor(subject);
   }));
 
-  profileBtn.addEventListener('click', () => {
+  if(profileBtn) profileBtn.addEventListener('click', () => {
     if(!currentUser){ alert('Bitte zuerst einloggen (Name eingeben).'); return; }
     openModal();
   });
 
-  closeModalBtn.addEventListener('click', closeModal);
+  if(closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
 
-  saveNameBtn.addEventListener('click', () => {
+  if(saveNameBtn) saveNameBtn.addEventListener('click', () => {
     const newName = qs('#modal-name').value.trim();
     if(!newName) return alert('Name darf nicht leer sein.');
     if(newName === currentUser.name){ closeModal(); return; }
-    // move user data to new name
     users[newName] = users[currentUser.name] || { points: currentUser.points || 0 };
     delete users[currentUser.name];
     currentUser.name = newName;
-    // persist
-    localStorage.setItem('lernapp_users', JSON.stringify(users));
+    try { localStorage.setItem('lernapp_users', JSON.stringify(users)); } catch(e){ console.warn('localStorage write failed', e); }
     updateBarProfile();
     closeModal();
   });
 
-  logoutBtn.addEventListener('click', () => {
-    // do NOT remove localStorage users, just end session
-    closeModal();
-    logout();
-  });
+  if(logoutBtn) logoutBtn.addEventListener('click', () => { closeModal(); logout(); });
 
-  // Keyboard: Enter to login
   input.addEventListener('keydown', (e) => { if(e.key === 'Enter') loginBtn.click(); });
 
-  // Export users via longpress on profile (optional)
-  profileBtn.addEventListener('contextmenu', (e) => {
-    e.preventDefault(); exportUsers();
-  });
-
+  // context menu (long-press) export
+  if(profileBtn) profileBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); exportUsers(); });
 });
