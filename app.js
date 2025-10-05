@@ -1,4 +1,4 @@
-// app.js (korrigierte Version)
+// app.js (robuste Version: entfernt BOM + versucht "salvage" bei extra Zeichen)
 let DATA = null;
 let users = {};
 let questions = {};
@@ -12,17 +12,56 @@ const qs = s => document.querySelector(s);
 const qsa = s => Array.from(document.querySelectorAll(s));
 
 /**
- * Robust loader: versucht data.json zu laden, fällt bei Fehlern
- * auf sichere Defaults zurück (damit Event-Handler trotzdem registriert werden).
+ * loadData:
+ * - fetch als text()
+ * - entfernt BOM (\uFEFF)
+ * - versucht JSON.parse, falls Fehler -> versucht Substring von erstem "{" bis letztem "}" (salvage)
+ * - bei totalem Fehler -> Fallback defaults
  */
 async function loadData(){
   try {
     const res = await fetch('data.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    DATA = await res.json();
+    let text = await res.text();
+
+    // Entferne UTF-8 BOM falls vorhanden
+    if (text.charCodeAt(0) === 0xFEFF) {
+      console.warn('BOM entfernt von data.json');
+      text = text.replace(/^\uFEFF/, '');
+    }
+
+    // Trimmt führende unsichtbare Zeichen vor erstem brace (sicherheit)
+    const firstBrace = text.search(/[\{\[]/);
+    if (firstBrace > 0) {
+      console.warn('Entferne führende Zeichen vor erstem JSON-Token');
+      text = text.slice(firstBrace);
+    }
+
+    // Versuche normales Parsen
+    try {
+      DATA = JSON.parse(text);
+    } catch (parseErr) {
+      console.warn('Erster JSON-Parse fehlgeschlagen, versuche salvage...', parseErr);
+
+      // Versuche salvage: von erstem "{" bis letztem "}" schneiden
+      const start = text.indexOf('{');
+      const end = text.lastIndexOf('}');
+      if (start !== -1 && end !== -1 && end > start) {
+        const sub = text.slice(start, end + 1);
+        try {
+          DATA = JSON.parse(sub);
+          console.warn('Salvage erfolgreich (geschnittenes Substring).');
+        } catch (parseErr2) {
+          console.error('Salvage-Parse fehlgeschlagen:', parseErr2);
+          throw parseErr2; // weiter nach unten auf Default
+        }
+      } else {
+        throw parseErr;
+      }
+    }
+
   } catch (e) {
-    console.error('Konnte data.json nicht laden — benutze Defaults. Fehler:', e);
-    // Fallback, damit die App weiter funktioniert
+    console.error('Konnte data.json nicht sauber laden/parsen — verwende Defaults. Fehler:', e);
     DATA = {
       config: { defaultPoints: 0 },
       users: {},
@@ -34,32 +73,33 @@ async function loadData(){
   users = DATA.users || {};
   questions = DATA.questions || {};
 
-  // merge local users if exist (keine Ausnahme wenn JSON kaputt)
+  // Merge lokale gespeicherte Nutzer (localStorage), falls vorhanden
   try {
     const local = JSON.parse(localStorage.getItem('lernapp_users') || '{}');
     users = { ...users, ...local };
   } catch (e) {
-    console.warn('lokaler Nutzer-JSON parse Fehler', e);
+    console.warn('Fehler beim Parsen von localStorage lernapp_users', e);
   }
+
+  console.info('DATA geladen. users keys:', Object.keys(users).length, 'questions keys:', Object.keys(questions).length);
 }
 
-function showLogin(){ qs('#login-screen').classList.remove('hidden'); qs('#main-screen').classList.add('hidden'); }
-function showMain(){ qs('#login-screen').classList.add('hidden'); qs('#main-screen').classList.remove('hidden'); }
-function openModal(){ qs('#profile-modal').classList.remove('hidden'); }
-function closeModal(){ qs('#profile-modal').classList.add('hidden'); }
+// --- UI Helper ---
+function showLogin(){ qs('#login-screen')?.classList.remove('hidden'); qs('#main-screen')?.classList.add('hidden'); }
+function showMain(){ qs('#login-screen')?.classList.add('hidden'); qs('#main-screen')?.classList.remove('hidden'); }
+function openModal(){ qs('#profile-modal')?.classList.remove('hidden'); }
+function closeModal(){ qs('#profile-modal')?.classList.add('hidden'); }
 
 function updateBarProfile(){
   if(!currentUser) {
-    qs('#bar-name').textContent = '—';
-    qs('#bar-points').textContent = '0';
+    if (qs('#bar-name')) qs('#bar-name').textContent = '—';
+    if (qs('#bar-points')) qs('#bar-points').textContent = '0';
     return;
   }
-  qs('#bar-name').textContent = currentUser.name;
-  qs('#bar-points').textContent = currentUser.points;
-  const modalName = qs('#modal-name');
-  if(modalName) modalName.value = currentUser.name;
-  const modalPoints = qs('#modal-points');
-  if(modalPoints) modalPoints.textContent = currentUser.points;
+  if (qs('#bar-name')) qs('#bar-name').textContent = currentUser.name;
+  if (qs('#bar-points')) qs('#bar-points').textContent = currentUser.points;
+  if (qs('#modal-name')) qs('#modal-name').value = currentUser.name;
+  if (qs('#modal-points')) qs('#modal-points').textContent = currentUser.points;
 }
 
 function randFrom(arr){ if(!arr || !arr.length) return null; return arr[Math.floor(Math.random()*arr.length)]; }
@@ -67,13 +107,14 @@ function pickQuestion(sub){ const list = questions[sub] || []; return randFrom(l
 
 function renderQuestion(q){
   if(!q){
-    qs('#question-text').textContent = 'Für dieses Fach sind noch keine Fragen vorhanden.';
-    qs('#answers').innerHTML = '';
+    if (qs('#question-text')) qs('#question-text').textContent = 'Für dieses Fach sind noch keine Fragen vorhanden.';
+    if (qs('#answers')) qs('#answers').innerHTML = '';
     return;
   }
   currentQuestion = q;
-  qs('#question-text').textContent = q.question;
+  if (qs('#question-text')) qs('#question-text').textContent = q.question;
   const container = qs('#answers');
+  if (!container) return;
   container.innerHTML = '';
   q.answers.forEach(a => {
     const btn = document.createElement('button');
@@ -130,11 +171,10 @@ function logout(){
   showLogin();
 }
 
+// --- Boot ---
 document.addEventListener('DOMContentLoaded', async () => {
-  // Wenn loadData fehlschlägt, fangen wir das intern ab und setzen Defaults.
   await loadData();
 
-  // Elemente (falls eines fehlt, loggen wir's, aber verhindern Fehler)
   const loginBtn = qs('#login-btn');
   const demoBtn = qs('#demo-btn');
   const input = qs('#username-input');
@@ -149,7 +189,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // quick-prefill from local users
+  // prefill from local users if any
   try {
     const local = JSON.parse(localStorage.getItem('lernapp_users') || '{}');
     const names = Object.keys(local);
@@ -199,6 +239,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   input.addEventListener('keydown', (e) => { if(e.key === 'Enter') loginBtn.click(); });
 
-  // context menu (long-press) export
   if(profileBtn) profileBtn.addEventListener('contextmenu', (e) => { e.preventDefault(); exportUsers(); });
 });
