@@ -38,15 +38,17 @@ async function loadData() {
 function showLogin() {
   qs('#login-screen')?.classList.remove('hidden');
   qs('#main-screen')?.classList.add('hidden');
+  closeModal(); // Profil sicher schließen
 }
 
 function showMain() {
   qs('#login-screen')?.classList.add('hidden');
   qs('#main-screen')?.classList.remove('hidden');
+  closeModal(); // Profil sicher schließen
 }
 
 function openModal() {
-  qs('#profile-modal')?.classList.remove('hidden');
+  if (currentUser) qs('#profile-modal')?.classList.remove('hidden');
 }
 
 function closeModal() {
@@ -166,7 +168,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     users[name] = { points: currentUser.points };
     localStorage.setItem('lernapp_users', JSON.stringify(users));
     updateBarProfile();
-    showMain();
+    showMain();        // direkt Hauptscreen
+    // Profil bleibt **geschlossen**
     showQuestionFor('deutsch');
   });
 
@@ -179,8 +182,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }));
 
   // Profil öffnen / schließen / speichern
-  profileBtn?.addEventListener('click', () => { if (currentUser) openModal(); });
+  profileBtn?.addEventListener('click', openModal);
   closeModalBtn?.addEventListener('click', closeModal);
+
   saveNameBtn?.addEventListener('click', () => {
     const newName = qs('#modal-name').value.trim();
     if (!newName) return alert('Name darf nicht leer sein.');
@@ -199,4 +203,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Export
   exportBtn?.addEventListener('click', exportUsers);
+
+  // Sicherstellen, dass Modal beim Start **geschlossen** ist
+  closeModal();
 });
